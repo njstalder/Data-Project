@@ -1,0 +1,461 @@
+>>>malloy
+
+source: data_00_to_05 is duckdb.table('./complaint-filings_2000-2005_clean.csv') extend {
+    rename: Facility_Occurred_1 is Facility_Occurred
+    rename: Received_Date_1 is Received_Date
+    rename: Subject_Primary_1 is Subject_Primary
+    rename: Subject_Secondary_1 is Subject_Secondary
+    rename: Status_Reasons_1 is Status_Reasons
+   
+   primary_key: Facility_Occurred_1
+}
+
+source: First_data is duckdb.table('./complaint-filings_2005-2009_clean.csv') extend {
+    rename: Facility_Occurred_2 is Facility_Occurred
+    rename: Received_Date_2 is Received_Date
+    rename: Subject_Primary_2 is Subject_Primary
+    rename: Subject_Secondary_2 is Subject_Secondary
+    rename: Status_Reasons_2 is Status_Reasons
+    
+    join_one: data_00_to_05 with Facility_Occurred_2
+}
+
+
+
+
+
+source: data_10_to_14 is duckdb.table('./complaint-filings_2010-2014_clean.csv') extend {
+    rename: Facility_Occurred_3 is Facility_Occurred
+    rename: Received_Date_3 is Received_Date
+    rename: Subject_Primary_3 is Subject_Primary
+    rename: Subject_Secondary_3 is Subject_Secondary
+    rename: Status_Reasons_3 is Status_Reasons
+   
+    primary_key: Facility_Occurred_3
+    
+}
+source: Second_data is duckdb.table('./complaint-filings_2015-2019_clean.csv') extend {
+    rename: Facility_Occurred_4 is Facility_Occurred
+    rename: Received_Date_4 is Received_Date
+    rename: Subject_Primary_4 is Subject_Primary
+    rename: Subject_Secondary_4 is Subject_Secondary
+    rename: Status_Reasons_4 is Status_Reasons
+    
+    join_one: data_10_to_14 with Facility_Occurred_4
+    
+}
+
+source: Third_data is duckdb.table('./complaint-filings_2020-2024_clean.csv') extend {
+    
+}
+>>>markdown
+Overarching Summary section:
+
+Key Limitation: The functions get stuck and run for hours on end if i combine all of the data sets into one output (ie. all the facility occureds across 3 of the datasets did not complete after hour + running). The farther the dataset is in the join tree, the longer the function takes, so I have split these into three main datasets 2000-2010, 2010-2020, and the 2024. (I troubleshooted many times and did anything i could find, but one table with three datasets wouldn't load after ten minutes while the tables loaded within a minute on their own)
+
+With this in mind, per block of statistics, you will see 2000-2009 first, 2010-2019 second, and 2020-2024 last for the most part.
+
+NOTE: most of these code blocks, especially towards the end take a long time to run (20 min + on an Apple M2 chip). For best efficiency close all other Desktops and tabs.
+>>>markdown
+
+
+The first block of data is 5 graphs broken into the 5 respective year gaps showing the amount of complaints over time
+>>>malloy
+# line_chart
+run: data_00_to_05 -> {
+    group_by: Received_Date_1.month
+    aggregate: Case_Number is count()
+}
+>>>malloy
+# line_chart
+run: First_data -> {
+    group_by: Received_Date_2.month
+    aggregate: Case_Number is count()
+    
+}
+>>>malloy
+# line_chart
+run: data_10_to_14 -> {
+    group_by: Received_Date_3.month
+    aggregate: Case_Number is count()
+
+}
+>>>malloy
+# line_chart
+run: Second_data -> {
+    group_by: Received_Date_4.month
+    aggregate: Case_Number is count()
+}
+>>>malloy
+# line_chart
+run: Third_data -> {
+    group_by: Received_Date.month
+    aggregate: Case_Number is count()
+
+}
+>>>markdown
+We can see that every month since the beginning of the century, there has been 5,000 complaints per month, with spikes around or above 10,000 in August 2004 and April 2020.
+>>>markdown
+Looking at some general statistics about the facilities:
+complaints by facility 
+>>>malloy
+run: First_data -> {
+    group_by: Facility_Occurred_2, data_00_to_05.Facility_Occurred_1
+    aggregate: Case_Number is count()
+
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Facility_Occurred_4, data_10_to_14.Facility_Occurred_3
+    aggregate: Case_Number is count()
+
+}
+>>>malloy
+run: Third_data-> {
+    group_by: Facility_Occurred
+    aggregate: Case_Number is count()
+
+}
+>>>markdown
+These show the disperstion of complaints filed through the different facilities. Namely, Florence maximum prison easily has the most complaints.
+
+Next general summary statistics will look at the content of these complaints.
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2, data_00_to_05.Subject_Primary_1
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Subject_Primary_4, data_10_to_14.Subject_Primary_3
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Subject_Primary
+    aggregate: Case_Number is count()
+}
+>>>markdown
+The Overall most common appeal through this system is a transfer of some kind. it could be to another cell, unit, or prison. Worrisome to see that so many people are feeling the need to move cells. Other results of note are unprofessional, inappriopiate, or misconduct from Staff with over 62,000 complaints from the whole dataset detailing those. The UDC (unit disclipinary committee) also has a high amount of complaints. both of these begging the question of abuse of prisoners.
+>>>markdown
+Now to look at some overarching results of those complaints
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Status_Reasons_1
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: First_data -> {
+    group_by: Status_Reasons_2
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Status_Reasons_3
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Status_Reasons_4
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Status_Reasons
+    aggregate: Case_Number is count()
+
+}
+>>>markdown
+...
+>>>markdown
+Now let's combine some of this data, looking at status Reasons combined with the content of the complaint.
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 10
+    }
+}
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_2
+        aggregate: Case_Number is count()
+        limit: 10
+    }
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Subject_Primary_3
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_3
+        aggregate: Case_Number is count()
+        limit: 10
+    }
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Subject_Primary_4
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_4
+        aggregate: Case_Number is count()
+        limit: 10
+    }
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Subject_Primary
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons
+        aggregate: Case_Number is count()
+        limit: 10
+    }
+}
+>>>markdown
+Since it is uncommon to see any of these complaints/appeals granted, here is a look at exactly what is granted
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_1 = 'GRT'
+    }
+}
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_2
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_2 = 'GRT'
+    }
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Subject_Primary_3
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_3
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_3 = 'GRT'
+    }
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Subject_Primary_4
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_4
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_4 = 'GRT'
+    }
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Subject_Primary
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons = 'GRT'
+    }
+}
+>>>markdown
+Now let us dig into some of the various denial codes and see how many are related to detainees not properly filing including the number of copies of attatchments or forms for the various levels, wrong forms, .  To do this I dug out CPG, DHO, EXH, FRM, IAT, INS, IRQ, ONE, QUA, RAP, RAT, RSA, RSF, RSR, UTA, UTF, UTR, WRL, ATT, ENG
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_1 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_2
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_2 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Subject_Primary_3
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_3
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_3 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Subject_Primary_4
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_4
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_4 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Subject_Primary
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
+>>>markdown
+These are all basic administrative things where they just reject an appeal that could be evidencing prisoner abuse
+>>>markdown
+Another large issue is documenting or filling out the form improperly. I found these codes to relate to the issue: IMP, MLT, MSI, OBS, SIG, LEG, 
+>>>malloy
+run: data_00_to_05-> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_1 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_2
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_2 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Subject_Primary_3
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_3
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_3 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Subject_Primary_4
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_4
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_4 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Subject_Primary
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>markdown
+Now let us add some facility location data into this, but also backtracking to any status reason
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Facility_Occurred_1
+    nest: subject_breakdown is {
+        group_by: Subject_Primary_1
+        aggregate: Case_Number is count()
+         nest: denial_reasons is {
+         group_by: Status_Reasons_1
+         aggregate: Case_Number is count()
+         limit: 10
+        }
+    }
+}
+>>>malloy
+run: First_data -> {
+    group_by: Facility_Occurred_2
+    nest: subject_breakdown is {
+        group_by: Subject_Primary_2
+        aggregate: Case_Number is count()
+         nest: denial_reasons is {
+         group_by: Status_Reasons_2
+         aggregate: Case_Number is count()
+         limit: 10
+        }
+    }
+}
+>>>malloy
+run: data_10_to_14 -> {
+    group_by: Facility_Occurred_3
+    nest: subject_breakdown is {
+        group_by: Subject_Primary_3
+        aggregate: Case_Number is count()
+         nest: denial_reasons is {
+         group_by: Status_Reasons_3
+         aggregate: Case_Number is count()
+         limit: 10
+        }
+    }
+}
+>>>malloy
+run: Second_data -> {
+    group_by: Facility_Occurred_4
+    nest: subject_breakdown is {
+        group_by: Subject_Primary_4
+        aggregate: Case_Number is count()
+         nest: denial_reasons is {
+         group_by: Status_Reasons_4
+         aggregate: Case_Number is count()
+         limit: 10
+        }
+    }
+}
+>>>malloy
+run: Third_data -> {
+    group_by: Facility_Occurred
+    nest: subject_breakdown is {
+        group_by: Subject_Primary
+        aggregate: Case_Number is count()
+         nest: denial_reasons is {
+         group_by: Status_Reasons
+         aggregate: Case_Number is count()
+         limit: 10
+        }
+    }
+}
