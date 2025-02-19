@@ -53,9 +53,10 @@ Overarching Summary section:
 
 Key Limitation: The functions get stuck and run for hours on end if i combine all of the data sets into one output (ie. all the facility occureds across 3 of the datasets did not complete after hour + running). The farther the dataset is in the join tree, the longer the function takes, so I have split these into three main datasets 2000-2010, 2010-2020, and the 2024. (I troubleshooted many times and did anything i could find, but one table with three datasets wouldn't load after ten minutes while the tables loaded within a minute on their own)
 
-With this in mind, per block of statistics, you will see 2000-2009 first, 2010-2019 second, and 2020-2024 last for the most part.
 
 NOTE: most of these code blocks, especially towards the end take a long time to run (20 min + on an Apple M2 chip). For best efficiency close all other Desktops and tabs.
+
+Additional context and information was provided to me by my sister. She currently works for a NFP law firm in DC helping these inmates through these processes, so I was able to have an inside look at the process and incentives.
 >>>markdown
 
 
@@ -166,7 +167,7 @@ run: Third_data -> {
 
 }
 >>>markdown
-...
+We see that full denials of appeals are by far the most common response; however, an explaination being the second consistently does ease the nerves. Other being the third most common doesn't give us much and limits the ability to do meta-analysis on those responses.
 >>>markdown
 Now let's combine some of this data, looking at status Reasons combined with the content of the complaint.
 >>>malloy
@@ -219,6 +220,8 @@ run: Third_data -> {
         limit: 10
     }
 }
+>>>markdown
+This is the most interesting data we have seen so far. It is reassuring that most all of the forced medical treatment appeals are returned with an explanation for all the year spreads. it is also interesting to see the overall total number of complaints surrounding staff decreases over time. However, digging more into that data, seeing a few thousand per year being withdrawn or SEN which says it is not a sensitive issue and doesn't raise to the level of a complaint is worrisome since those making those decisions or influencing them are the staff being complained about.
 >>>markdown
 Since it is uncommon to see any of these complaints/appeals granted, here is a look at exactly what is granted
 >>>malloy
@@ -277,6 +280,8 @@ run: Third_data -> {
     }
 }
 >>>markdown
+This over time analysis became very interesting to see the amount granted for specific subject matters change over time. Initially, mostly the medical forced treatment appeals were being granted as seen in 2000-2014. 2014-2020 had a stark drop in overall granted appeals, and as it ramped back up 2020-24, the housing appeals became much more likely to be granted.
+>>>markdown
 Now let us dig into some of the various denial codes and see how many are related to detainees not properly filing including the number of copies of attatchments or forms for the various levels, wrong forms, .  To do this I dug out CPG, DHO, EXH, FRM, IAT, INS, IRQ, ONE, QUA, RAP, RAT, RSA, RSF, RSR, UTA, UTF, UTR, WRL, ATT, ENG
 >>>malloy
 run: data_00_to_05 -> {
@@ -334,7 +339,9 @@ run: Third_data -> {
     }
 }
 >>>markdown
-These are all basic administrative things where they just reject an appeal that could be evidencing prisoner abuse
+These are all basic administrative things where they just reject an appeal that could be evidencing prisoner abuse. It is concerning to see around 5% of all appeals are being rejected solely to small administrative things; the more concerning part is these could have easily been avoided if proper help and counsel would be given to the inmates. These are also things that staff could easily fix quickly, but they are looking for reasons to reject them and the sheer amount of codes for administrative rejection is worrisome.
+
+Additional context about counsel and not being able to recieve it: all of these complaints have 15-45 due dates that evidence and forms must be submitted by depending on the type of appeal. In addition, the only way to receive secure legal counsel that is not supposed to be viewed (even though most of the time it is illegally viewed by prison staff under the guise of checking letters for contraband) is through mail, so this puts a lot of pressure on those due dates. Also, President Trump during his first time passed a law restricting the amount of money a pro bono lawyer can receive from successful suits against the BOP (bereau of prisons); this heavily reduced the amount of lawyers willing to take on this work since it will lose their firm money, win or lose. 
 >>>markdown
 Another large issue is documenting or filling out the form improperly. I found these codes to relate to the issue: IMP, MLT, MSI, OBS, SIG, LEG, 
 >>>malloy
@@ -393,10 +400,13 @@ run: Third_data -> {
         }
 }
 >>>markdown
+When writing this code, I was curious to see if any subject was going to jump to the top with these specific status reasons. it is good none did, so it doesn't look like certain subjects are being mass rejected under one reason and these appeals are truly taken case by case through the system. These are pretty low numbers, but considering every number resembles a person and an event they went through that they felt the need to try to go through the system
+>>>markdown
 Now let us add some facility location data into this, but also backtracking to any status reason
 >>>malloy
 run: data_00_to_05 -> {
     group_by: Facility_Occurred_1
+    aggregate: Case_Number is count()
     nest: subject_breakdown is {
         group_by: Subject_Primary_1
         aggregate: Case_Number is count()
@@ -410,6 +420,7 @@ run: data_00_to_05 -> {
 >>>malloy
 run: First_data -> {
     group_by: Facility_Occurred_2
+    aggregate: Case_Number is count()
     nest: subject_breakdown is {
         group_by: Subject_Primary_2
         aggregate: Case_Number is count()
@@ -423,6 +434,7 @@ run: First_data -> {
 >>>malloy
 run: data_10_to_14 -> {
     group_by: Facility_Occurred_3
+    aggregate: Case_Number is count()
     nest: subject_breakdown is {
         group_by: Subject_Primary_3
         aggregate: Case_Number is count()
@@ -436,6 +448,7 @@ run: data_10_to_14 -> {
 >>>malloy
 run: Second_data -> {
     group_by: Facility_Occurred_4
+    aggregate: Case_Number is count()
     nest: subject_breakdown is {
         group_by: Subject_Primary_4
         aggregate: Case_Number is count()
@@ -449,6 +462,7 @@ run: Second_data -> {
 >>>malloy
 run: Third_data -> {
     group_by: Facility_Occurred
+    aggregate: Case_Number is count()
     nest: subject_breakdown is {
         group_by: Subject_Primary
         aggregate: Case_Number is count()
@@ -459,3 +473,5 @@ run: Third_data -> {
         }
     }
 }
+>>>markdown
+This is intersting and concerning. Florence Maximum security prison which we saw at the beginning of analysis that had by far the most complaints is almost always the top with Staff Complaints up there. It begs the question and concern of prisoner abuse. Most of these being explained or just fully denied is not good, and another common reason was SEN, the not sensitive enough to raise to the level of a complaint is very concerning.
