@@ -1,0 +1,37 @@
+>>>markdown
+Notes during read through and look overs:
+
+- field.csv file 
+    - not sure how helpful this will be. maybe for some basic reasoning but doesn't provide much. see its preview for reasoning
+
+
+status reason question:
+    so there are multiple status columns in the main data set (STATRSN 1-5), 
+    how can i connect all of them so i can see the progression of the request's status through time? currently just primary keyed the STATRSN1
+
+
+federal system has 4 levels to go trhouh
+- unit manager
+- staff
+- warden
+- regional counsel
+
+thoughts:
+- how many cases are denied to solely to due dates
+        improper documentation
+        no access to documents
+    this will require going through reason codes and grouping them manually
+- group by facility
+    Lee
+    Thompson
+    Mccreary 
+    Butner
+    Victorville
+
+- also by facility over time
+- access to communication
+- could look at BOP director affliation, 
+
+
+
+

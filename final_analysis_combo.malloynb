@@ -58,7 +58,23 @@ NOTE: most of these code blocks, especially towards the end take a long time to 
 
 Additional context and information was provided to me by my sister. She currently works for a NFP law firm in DC helping these inmates through these processes, so I was able to have an inside look at the process and incentives.
 >>>markdown
-Most interesting visualization: Later in my analysis, I identified various denial codes that represented simple Admin errors such as not the correct number of copies attached to the complaint filing or a missing signature on the document that highlighted additional difficulties and non-content related reasons to reject a complaint filing. I took these and broke them down by both facility and the subject of the complaint filing.
+Most interesting visualization - see READme for some context and description of the next 5 visualizations.
+>>>malloy
+run: First_data -> {
+    group_by: Subject_Primary_2, data_00_to_05.Subject_Primary_1
+    aggregate: Case_Number is count()
+}
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 3
+        where: Status_Reasons_1 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
+    }
+}
 >>>malloy
 run: First_data -> {
     group_by: Facility_Occurred_2
@@ -72,6 +88,28 @@ run: First_data -> {
          aggregate: Case_Number is count()
          limit: 5
         }
+    }
+}
+>>>malloy
+run: data_00_to_05-> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 5
+        where: Status_Reasons_1 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
+        }
+}
+>>>malloy
+run: data_00_to_05 -> {
+    group_by: Subject_Primary_1
+    aggregate: Case_Number is count()
+    nest: denial_reasons is {
+        group_by: Status_Reasons_1
+        aggregate: Case_Number is count()
+        limit: 10
+        where: Status_Reasons_1 = 'GRT'
     }
 }
 >>>markdown
@@ -196,7 +234,7 @@ run: data_00_to_05 -> {
     nest: denial_reasons is {
         group_by: Status_Reasons_1
         aggregate: Case_Number is count()
-        limit: 10
+        limit: 5
     }
 }
 >>>malloy
@@ -311,7 +349,7 @@ run: data_00_to_05 -> {
     nest: denial_reasons is {
         group_by: Status_Reasons_1
         aggregate: Case_Number is count()
-        limit: 10
+        limit: 3
         where: Status_Reasons_1 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
     }
 }
@@ -344,7 +382,7 @@ run: Second_data -> {
     nest: denial_reasons is {
         group_by: Status_Reasons_4
         aggregate: Case_Number is count()
-        limit: 10
+        limit: 5
         where: Status_Reasons_4 = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
     }
 }
@@ -355,7 +393,7 @@ run: Third_data -> {
     nest: denial_reasons is {
         group_by: Status_Reasons
         aggregate: Case_Number is count()
-        limit: 10
+        limit: 5
         where: Status_Reasons = 'CPG' | 'DHO' | 'EXH' | 'FRM' | 'IAT' | 'INS' | 'IRQ' | 'ONE' | 'QUA' | 'RAP' | 'RAT' | 'RSA' | 'RSF' | 'RSR' | 'UTA' | 'UTF' | 'UTR' | 'WRL' | 'ATT' | 'ENG'
     }
 }
@@ -372,7 +410,7 @@ run: data_00_to_05-> {
     nest: denial_reasons is {
         group_by: Status_Reasons_1
         aggregate: Case_Number is count()
-        limit: 10
+        limit: 5
         where: Status_Reasons_1 = 'IMP' | 'MLT' | 'MSI' | 'OBS' | 'SIG' | 'LEG'
         }
 }
